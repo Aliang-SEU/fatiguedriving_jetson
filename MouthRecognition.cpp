@@ -5,7 +5,7 @@ MouthRecognition::MouthRecognition(){}
 
 void checkFlag() {
     if(flagCount > warningCount) {
-        
+        //测试
     }
 }
 
