@@ -104,6 +104,7 @@ std::vector<FaceInfo> MtcnnDetector::NMS(std::vector<FaceInfo>& bboxes,
     return bboxes_nms;
 }
 void MtcnnDetector::BBoxRegression(vector<FaceInfo>& bboxes) {
+
 #pragma omp parallel for num_threads(threads_num)
     for (size_t i = 0; i < bboxes.size(); ++i) {
         FaceBox &bbox = bboxes[i].bbox;
@@ -181,13 +182,16 @@ void MtcnnDetector::GenerateBBox(Blob<float>* confidence, Blob<float>* reg_box,
 }
 
 vector<FaceInfo> MtcnnDetector::ProposalNet(const cv::Mat& img, int minSize, float threshold, float factor) {
-    cv::Mat  resized;
+
+    cv::Mat resized;
     int width = img.cols;
     int height = img.rows;
-    float scale = 12.f / minSize;
-    float minWH = std::min(height, width) *scale;
+    float scale = 12.f / minSize;   //计算尺度来进行图像金字塔操作
+    float minWH = std::min(height, width) *scale; // 原图先进行缩放
     std::vector<float> scales;
     while (minWH >= 12) {
+        //不断迭代 找出所有的缩放尺度 最大尺度为整张图都是人脸 如果预先知道人脸想对于图像的 大小 是否可以直接进行计算得到factor的值
+        //固定的factor和minSize 则得到的图像金字塔的尺度应该是一致的 所以这边并非需要每次都进行计算 可以优化
         scales.push_back(scale);
         minWH *= factor;
         scale *= factor;
@@ -195,6 +199,7 @@ vector<FaceInfo> MtcnnDetector::ProposalNet(const cv::Mat& img, int minSize, flo
     Blob<float>* input_layer = PNet_->input_blobs()[0];
     total_boxes_.clear();
     for (int i = 0; i < scales.size(); i++) {
+        //每次缩放一次进行一次检测
         int ws = (int)std::ceil(width*scales[i]);
         int hs = (int)std::ceil(height*scales[i]);
         cv::resize(img, resized, cv::Size(ws, hs), 0, 0, cv::INTER_LINEAR);
@@ -313,11 +318,16 @@ vector<FaceInfo> MtcnnDetector::NextStage(const cv::Mat& image, vector<FaceInfo>
     return res;
 }
 
-vector<FaceInfo> MtcnnDetector::Detect(const cv::Mat& image, const float factor, const int minSize, const int stage) {
+vector<FaceInfo> MtcnnDetector::Detect(const cv::Mat& image, const int stage) {
+
     vector<FaceInfo> pnet_res;
     vector<FaceInfo> rnet_res;
     vector<FaceInfo> onet_res;
+
     const float* threshold = this->threshold;
+    const float factor = this->factor;
+    const int minSize = this->minSize;
+
     if (stage >= 1){
         pnet_res = ProposalNet(image, minSize, threshold[0], factor);
     }
@@ -361,10 +371,24 @@ vector<FaceInfo> MtcnnDetector::Detect(const cv::Mat& image, const float factor,
         return rnet_res;
     }
     else if (stage == 3){
+        autoSet(onet_res, image);       //自适应图像金字塔参数
         return onet_res;
     }
     else{
         return onet_res;
+    }
+}
+
+void MtcnnDetector::autoSet(std::vector<FaceInfo>& faceInfo, const cv::Mat& image) {
+
+    if(faceInfo.size() > 0){
+
+        int w = (int) (faceInfo[0].bbox.xmax - faceInfo[0].bbox.xmin + 1);
+        int h = (int) (faceInfo[0].bbox.ymax - faceInfo[0].bbox.ymin + 1);
+
+        float scale = 12.f / minSize;   //计算尺度来进行图像金字塔操作
+        float minWH = std::min(w, h) *scale; // 原图先进行缩放
+
     }
 }
 
@@ -377,8 +401,10 @@ void MtcnnDetector::drawResult(std::vector<FaceInfo>& faceInfo, cv::Mat& image){
         int h = (int) (faceInfo[i].bbox.ymax - faceInfo[i].bbox.ymin + 1);
         cv::rectangle(image, cv::Rect(x, y, w, h), cv::Scalar(255, 0, 0), 2);
         //标记点
-//        for(int j = 0; j < 5; j++) {
-//            cv::circle(image,cv::Point(faceInfo[i].landmark[2 * j],faceInfo[i].landmark[2 * j + 1]), 1, cv::Scalar(255,255,0),2);
-//        }
+        for(int j = 0; j < 5; j++) {
+            cv::circle(image,cv::Point(faceInfo[i].landmark[2 * j],faceInfo[i].landmark[2 * j + 1]), 1, cv::Scalar(255,255,0),2);
+        }
+        cv::putText(image, cv::format("%.4f",faceInfo[i].bbox.score), cv::Point(x, y), FONT_HERSHEY_SCRIPT_SIMPLEX, 2, cv::Scalar(0,0,255));
+
     }
 }

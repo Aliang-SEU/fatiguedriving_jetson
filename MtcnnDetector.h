@@ -1,7 +1,6 @@
 #ifndef MTCNNDETECTOR_H
 #define MTCNNDETECTOR_H
 
-
 #include <fstream>
 #include <iostream>
 
@@ -30,15 +29,25 @@ typedef struct FaceInfo {
     FaceBox bbox;
 } FaceInfo;
 
+namespace MtcnnNamespace {
+    struct FaceInfoComparator{
+        bool operator()(const FaceInfo& f1, const FaceInfo& f2) {
+            return f1.bbox.score < f2.bbox.score;
+        }
+    };
+}
+
 class MtcnnDetector {
 public:
 
     MtcnnDetector(const std::string& proto_model_dir);
-    std::vector<FaceInfo> Detect(const cv::Mat& img, const float factor = 0.5f, const int min_size = 40, const int stage = 3);
+    std::vector<FaceInfo> Detect(const cv::Mat& img, const int stage = 3);
 
     void drawResult(std::vector<FaceInfo>& faceInfo, cv::Mat& image);
 
 protected:
+
+    void autoSet(std::vector<FaceInfo>& faceInfo, const cv::Mat& image);
     std::vector<FaceInfo> ProposalNet(const cv::Mat& img, int min_size, float threshold, float factor);
     std::vector<FaceInfo> NextStage(const cv::Mat& image, std::vector<FaceInfo> &pre_stage_res, int input_w, int input_h, int stage_num, const float threshold);
     void BBoxRegression(std::vector<FaceInfo>& bboxes);
@@ -59,13 +68,14 @@ private:
 
     std::vector<FaceInfo> candidate_boxes_;
     std::vector<FaceInfo> total_boxes_;
+    std::vector<FaceInfo> faceInfo;
 
-    const float factor = 0.728f;
-    const float threshold[3] = { 0.7f, 0.6f, 0.6f };
-    const int minSize = 12;
+    const float factor = 0.5f;
+    const float threshold[3] = { 0.7f, 0.7f, 0.7f };
+    const int minSize = 40;
 
     //omp
-    const int threads_num = 4;
+    const int threads_num = 6;
     //pnet config
     const float pnet_stride = 2;
     const float pnet_cell_size = 12;

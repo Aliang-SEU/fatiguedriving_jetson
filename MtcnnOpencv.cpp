@@ -183,8 +183,6 @@ vector<FaceInfo> mtcnnOpencv::NextStage(const cv::Mat& image, vector<FaceInfo> &
 
     std::vector< Mat > targets_blobs;
 
-
-
     switch (stage_num) {
         case 2: {
 //            input_layer = RNet_->input_blobs()[0];
@@ -237,7 +235,6 @@ vector<FaceInfo> mtcnnOpencv::NextStage(const cv::Mat& image, vector<FaceInfo> &
 
         }break;
     }
-
 
     const float* confidence_data = (float*)confidence->data;
 //    std::cout<<"confidence_data[0] "<<confidence_data[0]<<std::endl;
@@ -321,10 +318,16 @@ vector<FaceInfo> mtcnnOpencv::ProposalNet(const cv::Mat& img, int minSize, float
     return res_boxes;
 }
 
-vector<FaceInfo> mtcnnOpencv::Detect_mtcnn(const cv::Mat& image, const int minSize, const float* threshold, const float factor, const int stage) {
+vector<FaceInfo> mtcnnOpencv::Detect_mtcnn(const cv::Mat& image, const int stage) {
+
     vector<FaceInfo> pnet_res;
     vector<FaceInfo> rnet_res;
     vector<FaceInfo> onet_res;
+
+    const float* threshold = this->threshold;
+    const float factor = this->factor;
+    const int minSize = this->minSize;
+
     if (stage >= 1){
         pnet_res = ProposalNet(image, minSize, threshold[0], factor);
     }
