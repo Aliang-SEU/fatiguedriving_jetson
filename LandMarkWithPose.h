@@ -23,9 +23,9 @@ public:
     LandmarkAndPose getPredict(cv::Mat& image);
 
 private:
-    std::string network = "model/deploy.prototxt";
-    std::string param = "model/68point_dlib_with_pose.caffemodel";
-    std::string meanfile = "model/VGG_mean.binaryproto";
+    std::string network = "../model/landmarkWithPose/68point_dlib_with_pose.prototxt";
+    std::string param = "../model/landmarkWithPose/68point_dlib_with_pose.caffemodel";
+    std::string meanfile = "../model/landmarkWithPose/VGG_mean.binaryproto";
 
     std::shared_ptr<Net<float>> net;
     cv::Size inputSize;

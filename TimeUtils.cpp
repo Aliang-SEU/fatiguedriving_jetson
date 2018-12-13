@@ -1,22 +1,28 @@
-#include "Utils.h"
+#include "TimeUtils.h"
 
-Utils::Utils()
-{
+#define INFO_STREAM( stream ) \
+std::cout << stream << std::endl
 
-}
+#define WARN_STREAM( stream ) \
+std::cout << "Warning: " << stream << std::endl
+
+#define ERROR_STREAM( stream ) \
+std::cout << "Error: " << stream << std::endl
+
 
 void Utils::timeStart() {
-    this->_start = cv::getTickCount();
+
+    this->start = cv::getTickCount();
 }
 
 void Utils::timeEnd(std::string& str) {
-    std::cout<< str << (double) (cv::getTickCount() - this->_start ) / cv::getTickFrequency()
-                    <<std::endl;
+
+    INFO_STREAM(str << (double) (cv::getTickCount() - this->start ) / cv::getTickFrequency());
 }
 
 void Utils::timeUpdate(std::string& str) {
-    int64 _now = cv::getTickCount();
-    std::cout<< str << (double) (_now - this->_start ) / cv::getTickFrequency()
-                    <<std::endl;
-    this->_start = _now;
+
+    int64 now = cv::getTickCount();
+    INFO_STREAM(str << (double) (now - this->start ) / cv::getTickFrequency());
+    this->start = now;
 }

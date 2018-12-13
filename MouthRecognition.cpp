@@ -3,16 +3,16 @@
 
 MouthRecognition::MouthRecognition(){}
 
-void checkFlag() {
-    if(flagCount > warningCount) {
-        //测试
-    }
-}
+//void checkFlag() {
+//    if(flagCount > warningCount) {
 
-void clearFlag() {
-    //清除已经累计的数值
-    flagCount = 0;
-}
+//    }
+//}
+
+//void clearFlag() {
+//    //清除已经累计的数值
+//    flagCount = 0;
+//}
 
 float getDistance(cv::Point p1, cv::Point p2) {
     float res = std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2));
@@ -21,7 +21,7 @@ float getDistance(cv::Point p1, cv::Point p2) {
 /*
  * 人脸倾斜矫正2D(需要结合姿态估计计算3维情况下的人脸)
  */
-void MouthRecognition::correctPoint(float theta, std::vector<cv::Points>& points) {
+void MouthRecognition::correctPoint(float theta, std::vector<cv::Point>& points) {
     cv::Point& p0 = points[0];
     for(size_t i = 1; i < points.size(); i++) {
         cv::Point p(points[i].x, points[i].y);

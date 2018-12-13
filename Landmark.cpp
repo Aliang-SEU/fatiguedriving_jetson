@@ -1,6 +1,18 @@
+/*   cite:
+ *   Facial Landmark Detection with Tweaked Convolutional Neural Networks
+ *   Published in IEEE Trans. on Pattern Analysis and Machine Intelligence (TPAMI), 2018
+ *   Recommended citation: Yue Wu*, Tal Hassner*, KangGeon Kim, Gerard Medioni,
+ *   and Prem Natarajan. Facial Landmark Detection with Tweaked Convolutional Neural Networks.
+ *   IEEE Trans. on Pattern Analysis and Machine Intelligence (TPAMI), 40(12):3067--3074, Dec. 2018.
+ *
+ *   git: https://github.com/cooparation/VanillaCNN_faceLandmark
+ *   目前的速度大概在1.7ms 一帧
+ */
+
 #include "Landmark.h"
 
 Landmark::Landmark(){
+
     Caffe::set_mode(Caffe::GPU);
     net.reset(new Net<float>(this->network, TEST));
     net->CopyTrainedLayersFrom(this->weights);
@@ -49,17 +61,11 @@ LandmarkPoints Landmark::detectLandmark(cv::Mat& img) {
     float feat_dim = feature_blob->count() / feature_blob->num();//计算特征维度
     const float* data_ptr = (const float *)feature_blob->cpu_data();//特征块数据
 
-//    std::vector<float> feat2;
-//    for (int i = 0; i < feat_dim; i++){
-//        feat2.push_back(*data_ptr);
-//        if (i < feat_dim - 1)
-//            data_ptr++;
-//    }
     LandmarkPoints landmarkPoints;
 
     int points_num = feat_dim / 2;
     for (int i = 0; i < points_num; i++) {
-        cv::Point point = cv::Point(int(*(data_ptr+(2*i))*(tmp.right() - tmp.left()) + tmp.left()),int(*(data_ptr+ 2 * i + 1)*(tmp.bottom() - tmp.top()) + tmp.top()));
+        cv::Point point = cv::Point(int(*(data_ptr+(2*i))*(img.cols)),int(*(data_ptr+ 2 * i + 1)*(img.rows)));
         landmarkPoints.faceLandmark.push_back(point);
         if(i <= 16) {
             landmarkPoints.faceEdge.push_back(point);
@@ -81,7 +87,7 @@ LandmarkPoints Landmark::detectLandmark(cv::Mat& img) {
     }
 
     /*for(int i = 0;i < feat_dim/2;i++){
-        Point x = Point(int(feat2[2*i]*(tmp.right() - tmp.left()) + tmp.left()),int(feat2[2*i + 1]*(tmp.bottom() - tmp.top()) + tmp.top()));
+        Point x = Point(int(feat2[2*i]*(tmp.right() - tmp.left()) + tmp.left()),steaint(feat2[2*i + 1]*(tmp.bottom() - tmp.top()) + tmp.top()));
         cv::circle(image, x, 0.1, Scalar(255, 0, 0), 2, 2, 0);
     }*/
 

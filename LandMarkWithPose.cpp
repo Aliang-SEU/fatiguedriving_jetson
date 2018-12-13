@@ -1,3 +1,10 @@
+/*  cite
+ *  git:
+ *  repo1: https://github.com/guozhongluo/head-pose-estimation-and-face-landmark
+ *  repo2: https://github.com/qiexing/face-landmark-localization
+ *  目前的速度大概在32ms 一帧
+ */
+
 #include "LandMarkWithPose.h"
 
 LandmarkWithPose::LandmarkWithPose(){
@@ -100,10 +107,6 @@ void LandmarkWithPose::preprocess(cv::Mat& img, std::vector<cv::Mat>* input_chan
 
 }
 
-//void LandmarkWithPose::recover(std::vector<cv::Point>& landmark){
-
-//}
-
 LandmarkAndPose LandmarkWithPose::getPredict(cv::Mat& img){
 
     LandmarkAndPose landmarkAndPose;
@@ -123,8 +126,6 @@ LandmarkAndPose LandmarkWithPose::getPredict(cv::Mat& img){
     const float* result = predictPoints->cpu_data();
 
     for(int i = 0; i < 136; i++) {
-        //cv::Point p = cv::Point((int)(*(result + 2 * i) * inputSize.height / 2 + inputSize.width / 2));
-        //cv::Point p = cv::Point(*(result + 2 * i), *(result + 2 * i + 1));
         landmarkAndPose.landmark.push_back(*(result+i));
     }
 

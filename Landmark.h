@@ -5,7 +5,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include "Utils.h"
+#include "TimeUtils.h"
 
 using namespace caffe;
 
@@ -26,7 +26,7 @@ typedef struct LandmarkPoints {
     std::vector<cv::Point> faceLandmark; //0-67
     std::vector<cv::Point> faceEdge;    //0-16
     std::vector<cv::Point> leftEyebrow; //17-21
-    std::vector<cv::Point> rightEybrow; //22-26
+    std::vector<cv::Point> rightEyebrow; //22-26
     std::vector<cv::Point> nose;        //27-35
     std::vector<cv::Point> leftEye;     //36-41 顺时针
     std::vector<cv::Point> rightEye;    //42-47 顺时针
@@ -39,8 +39,8 @@ public:
     Landmark();
     LandmarkPoints detectLandmark(cv::Mat& img);
 private:
-    std::string network = "../model/landmark.prototxt";
-    std::string weights = "../model/landmark.caffemodel";
+    std::string network = "../model/landmark/landmark.prototxt";
+    std::string weights = "../model/landmark/landmark.caffemodel";
 
     std::shared_ptr<Net<float>> net;
     cv::Size  input_size;

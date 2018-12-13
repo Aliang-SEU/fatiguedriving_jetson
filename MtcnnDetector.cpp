@@ -5,14 +5,14 @@ using namespace std;
 
 MtcnnDetector::MtcnnDetector(const string& proto_model_dir) {
     Caffe::set_mode(Caffe::GPU);
-    PNet_.reset(new Net<float>((proto_model_dir + "/det1.prototxt"), TEST));
-    PNet_->CopyTrainedLayersFrom(proto_model_dir + "/det1.caffemodel");
-    RNet_.reset(new Net<float>((proto_model_dir + "/det2.prototxt"), TEST));
-    RNet_->CopyTrainedLayersFrom(proto_model_dir + "/det2.caffemodel");
-    ONet_.reset(new Net<float>((proto_model_dir + "/det3.prototxt"), TEST));
-    ONet_->CopyTrainedLayersFrom(proto_model_dir + "/det3.caffemodel");
-    //ONet_.reset(new Net<float>((proto_model_dir + "/det3-half.prototxt"), TEST));
-    //ONet_->CopyTrainedLayersFrom(proto_model_dir + "/det3-half.caffemodel");
+    PNet_.reset(new Net<float>((proto_model_dir + "/mtcnnCaffe/det1.prototxt"), TEST));
+    PNet_->CopyTrainedLayersFrom(proto_model_dir + "/mtcnnCaffe/det1.caffemodel");
+    RNet_.reset(new Net<float>((proto_model_dir + "/mtcnnCaffe/det2.prototxt"), TEST));
+    RNet_->CopyTrainedLayersFrom(proto_model_dir + "/mtcnnCaffe/det2.caffemodel");
+    ONet_.reset(new Net<float>((proto_model_dir + "/mtcnnCaffe/det3.prototxt"), TEST));
+    ONet_->CopyTrainedLayersFrom(proto_model_dir + "/mtcnnCaffe/det3.caffemodel");
+    //ONet_.reset(new Net<float>((proto_model_dir + "/mtcnnCaffe/det3-half.prototxt"), TEST));
+    //ONet_->CopyTrainedLayersFrom(proto_model_dir + "/mtcnnCaffe/det3-half.caffemodel");
 
     Blob<float>* input_layer;
     input_layer = PNet_->input_blobs()[0];
@@ -22,6 +22,7 @@ MtcnnDetector::MtcnnDetector(const string& proto_model_dir) {
 
 float MtcnnDetector::IoU(float xmin, float ymin, float xmax, float ymax,
     float xmin_, float ymin_, float xmax_, float ymax_, bool is_iom) {
+
     float iw = std::min(xmax, xmax_) - std::max(xmin, xmin_) + 1;
     float ih = std::min(ymax, ymax_) - std::max(ymin, ymin_) + 1;
     if (iw <= 0 || ih <= 0)
@@ -117,7 +118,10 @@ void MtcnnDetector::BBoxRegression(vector<FaceInfo>& bboxes) {
         bbox.ymax += bbox_reg[3] * h;
     }
 }
+
+//边界框回归填充函数
 void MtcnnDetector::BBoxPad(vector<FaceInfo>& bboxes, int width, int height) {
+
 #pragma omp parallel for num_threads(threads_num)
     for (size_t i = 0; i < bboxes.size(); ++i) {
         FaceBox &bbox = bboxes[i].bbox;
@@ -127,7 +131,9 @@ void MtcnnDetector::BBoxPad(vector<FaceInfo>& bboxes, int width, int height) {
         bbox.ymax = round(min(bbox.ymax, height - 1.f));
     }
 }
+
 void MtcnnDetector::BBoxPadSquare(vector<FaceInfo>& bboxes, int width, int height) {
+
 #pragma omp parallel for num_threads(threads_num)
     for (size_t i = 0; i < bboxes.size(); ++i) {
         FaceBox &bbox = bboxes[i].bbox;
@@ -141,8 +147,11 @@ void MtcnnDetector::BBoxPadSquare(vector<FaceInfo>& bboxes, int width, int heigh
         bbox.ymax = round(min(bbox.ymin + side - 1, height - 1.f));
     }
 }
+
+//
 void MtcnnDetector::GenerateBBox(Blob<float>* confidence, Blob<float>* reg_box,
     float scale, float thresh) {
+
     int feature_map_w_ = confidence->width();
     int feature_map_h_ = confidence->height();
     int spatical_size = feature_map_w_*feature_map_h_;
@@ -305,7 +314,8 @@ vector<FaceInfo> MtcnnDetector::NextStage(const cv::Mat& image, vector<FaceInfo>
     }
     return res;
 }
-vector<FaceInfo> MtcnnDetector::Detect(const cv::Mat& image, const int minSize, const float factor, const int stage) {
+
+vector<FaceInfo> MtcnnDetector::Detect(const cv::Mat& image, const float factor, const int minSize, const int stage) {
     vector<FaceInfo> pnet_res;
     vector<FaceInfo> rnet_res;
     vector<FaceInfo> onet_res;
@@ -360,7 +370,8 @@ vector<FaceInfo> MtcnnDetector::Detect(const cv::Mat& image, const int minSize, 
     }
 }
 
-void MtcnnDetector::drawResult(std::vector<FaceInfo> faceInfo, cv::Mat image){
+void MtcnnDetector::drawResult(std::vector<FaceInfo>& faceInfo, cv::Mat& image){
+
     for (int i = 0; i < faceInfo.size(); i++) {
         int x = (int) faceInfo[i].bbox.xmin;
         int y = (int) faceInfo[i].bbox.ymin;
@@ -368,8 +379,8 @@ void MtcnnDetector::drawResult(std::vector<FaceInfo> faceInfo, cv::Mat image){
         int h = (int) (faceInfo[i].bbox.ymax - faceInfo[i].bbox.ymin + 1);
         cv::rectangle(image, cv::Rect(x, y, w, h), cv::Scalar(255, 0, 0), 2);
         //标记点
-        for(int j = 0; j < 5; j++) {
-            cv::circle(image,cv::Point(faceInfo[i].landmark[2 * j],faceInfo[i].landmark[2 * j + 1]), 1, cv::Scalar(255,255,0),2);
-        }
+//        for(int j = 0; j < 5; j++) {
+//            cv::circle(image,cv::Point(faceInfo[i].landmark[2 * j],faceInfo[i].landmark[2 * j + 1]), 1, cv::Scalar(255,255,0),2);
+//        }
     }
 }

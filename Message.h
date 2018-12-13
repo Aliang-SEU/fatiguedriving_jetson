@@ -30,14 +30,14 @@ public:
         this->messageType = type;
     }
 
-    Message getMessage() {
+    MessageType getMessageType() {
         return this->messageType;
     }
 
 private:
     std::string message;
     MessageType messageType;
-}
+};
 
 #endif // MESSAGE
 

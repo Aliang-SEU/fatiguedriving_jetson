@@ -19,7 +19,7 @@ private:
 	cv::Mat mean_;
 	int num_channels_;
 
-    const std::string modelPath="./model/detect_eye.prototxt";
-    const std::string paramPath="./model/detect_eye.caffemodel";
+    const std::string modelPath="./model/eye/detect_eye.prototxt";
+    const std::string paramPath="./model/eye/detect_eye.caffemodel";
 };
 

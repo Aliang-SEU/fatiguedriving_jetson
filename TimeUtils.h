@@ -6,13 +6,13 @@
 class Utils
 {
 public:
-    Utils();
+    Utils() {};
     void timeStart();
     void timeEnd(std::string& str);
     void timeUpdate(std::string& str);
 
 private:
-    int64 _start;
+    int64 start;
 
 };
 

@@ -1,14 +1,18 @@
 #ifndef MTCNNDETECTOR_H
 #define MTCNNDETECTOR_H
 
-#include <caffe/caffe.hpp>
+
 #include <fstream>
 #include <iostream>
-#include <opencv2/opencv.hpp>
+
 #include <omp.h>
 #include <boost/shared_ptr.hpp>
 
+#include <caffe/caffe.hpp>
+#include <opencv2/opencv.hpp>
+
 using namespace caffe;
+
 //人脸边界框
 typedef struct FaceBox {
     float xmin;
@@ -30,9 +34,9 @@ class MtcnnDetector {
 public:
 
     MtcnnDetector(const std::string& proto_model_dir);
-    std::vector<FaceInfo> Detect(const cv::Mat& img, const int min_size = 40, const float factor = 0.7f, const int stage = 3);
+    std::vector<FaceInfo> Detect(const cv::Mat& img, const float factor = 0.5f, const int min_size = 40, const int stage = 3);
 
-    void drawResult(std::vector<FaceInfo> faceInfo, cv::Mat image);
+    void drawResult(std::vector<FaceInfo>& faceInfo, cv::Mat& image);
 
 protected:
     std::vector<FaceInfo> ProposalNet(const cv::Mat& img, int min_size, float threshold, float factor);

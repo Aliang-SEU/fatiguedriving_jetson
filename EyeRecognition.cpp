@@ -73,6 +73,7 @@ void EyeRecognition::Preprocess(const cv::Mat& img, std::vector<cv::Mat>* input_
 	CHECK(reinterpret_cast<float*>(input_channels->at(0).data) == net->input_blobs()[0]->cpu_data()) << "Input channels are not wrapping the input layer of the network.";
 }
 
+//输入为人眼图像， 输出为判定的状态结果
 bool EyeRecognition::predict(const cv::Mat& img)
 {
 	Blob<float>* input_layer = net->input_blobs()[0];
@@ -89,6 +90,7 @@ bool EyeRecognition::predict(const cv::Mat& img)
 	Blob<float>* output_layer = net->output_blobs()[0];
 	int count = output_layer->count(); //the channel of confidence is two
 	const float* confidence_begin = output_layer->cpu_data();
+
 	//std::cout << confidence_begin[0] << " "<< confidence_begin[1] << std::endl;
 	if (confidence_begin[0] > confidence_begin[1])
 		return true;
