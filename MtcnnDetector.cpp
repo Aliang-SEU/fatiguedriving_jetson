@@ -72,34 +72,32 @@ std::vector<FaceInfo> MtcnnDetector::NMS(std::vector<FaceInfo>& bboxes,
 
         select_idx++;
 #pragma omp parallel for num_threads(threads_num)
-        {
-            for (int32_t i = select_idx; i < num_bbox; i++) {
-                if (mask_merged[i] == 1)
-                    continue;
+        for (int32_t i = select_idx; i < num_bbox; i++) {
+            if (mask_merged[i] == 1)
+                continue;
 
-                FaceBox & bbox_i = bboxes[i].bbox;
-                float x = std::max<float>(x1, static_cast<float>(bbox_i.xmin));
-                float y = std::max<float>(y1, static_cast<float>(bbox_i.ymin));
-                float w = std::min<float>(x2, static_cast<float>(bbox_i.xmax)) - x + 1;
-                float h = std::min<float>(y2, static_cast<float>(bbox_i.ymax)) - y + 1;
-                if (w <= 0 || h <= 0)
-                    continue;
+            FaceBox & bbox_i = bboxes[i].bbox;
+            float x = std::max<float>(x1, static_cast<float>(bbox_i.xmin));
+            float y = std::max<float>(y1, static_cast<float>(bbox_i.ymin));
+            float w = std::min<float>(x2, static_cast<float>(bbox_i.xmax)) - x + 1;
+            float h = std::min<float>(y2, static_cast<float>(bbox_i.ymax)) - y + 1;
+            if (w <= 0 || h <= 0)
+                continue;
 
-                float area2 = static_cast<float>((bbox_i.xmax - bbox_i.xmin + 1) * (bbox_i.ymax - bbox_i.ymin + 1));
-                float area_intersect = w * h;
+            float area2 = static_cast<float>((bbox_i.xmax - bbox_i.xmin + 1) * (bbox_i.ymax - bbox_i.ymin + 1));
+            float area_intersect = w * h;
 
-                switch (methodType) {
-                case 'u':
-                    if (static_cast<float>(area_intersect) / (area1 + area2 - area_intersect) > thresh)
-                        mask_merged[i] = 1;
-                    break;
-                case 'm':
-                    if (static_cast<float>(area_intersect) / std::min(area1, area2) > thresh)
-                        mask_merged[i] = 1;
-                    break;
-                default:
-                    break;
-                }
+            switch (methodType) {
+            case 'u':
+                if (static_cast<float>(area_intersect) / (area1 + area2 - area_intersect) > thresh)
+                    mask_merged[i] = 1;
+                break;
+            case 'm':
+                if (static_cast<float>(area_intersect) / std::min(area1, area2) > thresh)
+                    mask_merged[i] = 1;
+                break;
+            default:
+                break;
             }
         }
     }

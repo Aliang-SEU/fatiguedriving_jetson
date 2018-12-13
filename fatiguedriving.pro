@@ -5,7 +5,7 @@ TARGET = fatiguedriving
 CONFIG += console
 CONFIG -= app_bundle
 QMAKE_CXX = ccache g++
-QMAKE_CXXFLAGS += -std=c++0x -o3
+QMAKE_CXXFLAGS += -std=c++11 -fopenmp -o3
 TEMPLATE = app
 
 INCLUDEPATH +=  /home/nvidia/Documents/MTCNN_Caffe/include \
@@ -111,4 +111,5 @@ LIBS += -L/usr/local/lib/ \
         -lprotobuf \
         -lboost_system \
         -lboost_filesystem \
-        -ldlib
+        -ldlib \
+        -lgomp
