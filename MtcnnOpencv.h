@@ -37,11 +37,12 @@ typedef struct FaceInfo {
 } FaceInfo;
 
 
-class mtcnnOpencv{
+class MtcnnOpencv{
 
 public:
-    mtcnnOpencv(const string& proto_model_dir);
-    vector<FaceInfo> Detect_mtcnn(const cv::Mat& img, const int stage = 3);
+    MtcnnOpencv(const string& proto_model_dir);
+    vector<FaceInfo> Detect(const cv::Mat& img, const int stage = 3);
+    void drawResult(std::vector<FaceInfo>& faceInfo, cv::Mat& image);
 //protected:
     vector<FaceInfo> ProposalNet(const cv::Mat& img, int min_size, float threshold, float factor);
     vector<FaceInfo> NextStage(const cv::Mat& image, vector<FaceInfo> &pre_stage_res, int input_w, int input_h, int stage_num, const float threshold);
@@ -61,7 +62,7 @@ public:
     std::vector<FaceInfo> total_boxes_;
 
     const float factor = 0.5f;
-    const float threshold[3] = { 0.7f, 0.6f, 0.6f };
+    const float threshold[3] = { 0.7f, 0.7f, 0.7f };
     const int minSize = 40;
 };
 

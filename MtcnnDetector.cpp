@@ -1,9 +1,12 @@
 #include "MtcnnDetector.h"
 
+#define DEBUG
+
 using namespace cv;
 using namespace std;
 
 MtcnnDetector::MtcnnDetector(const string& proto_model_dir) {
+
     Caffe::set_mode(Caffe::GPU);
     PNet_.reset(new Net<float>((proto_model_dir + "/mtcnnCaffe/det1.prototxt"), TEST));
     PNet_->CopyTrainedLayersFrom(proto_model_dir + "/mtcnnCaffe/det1.caffemodel");
@@ -103,6 +106,7 @@ std::vector<FaceInfo> MtcnnDetector::NMS(std::vector<FaceInfo>& bboxes,
     }
     return bboxes_nms;
 }
+
 void MtcnnDetector::BBoxRegression(vector<FaceInfo>& bboxes) {
 
 #pragma omp parallel for num_threads(threads_num)
@@ -186,19 +190,23 @@ vector<FaceInfo> MtcnnDetector::ProposalNet(const cv::Mat& img, int minSize, flo
     cv::Mat resized;
     int width = img.cols;
     int height = img.rows;
+
     float scale = 12.f / minSize;   //计算尺度来进行图像金字塔操作
     float minWH = std::min(height, width) *scale; // 原图先进行缩放
     std::vector<float> scales;
     while (minWH >= 12) {
-        //不断迭代 找出所有的缩放尺度 最大尺度为整张图都是人脸 如果预先知道人脸想对于图像的 大小 是否可以直接进行计算得到factor的值
+        //不断迭代 找出所有的缩放尺度 最大尺度为整张图都是人脸 如果预先知道人脸想对于图像的大小 是否可以直接进行计算得到factor的值
         //固定的factor和minSize 则得到的图像金字塔的尺度应该是一致的 所以这边并非需要每次都进行计算 可以优化
         scales.push_back(scale);
         minWH *= factor;
         scale *= factor;
     }
+
     Blob<float>* input_layer = PNet_->input_blobs()[0];
     total_boxes_.clear();
+
     for (int i = 0; i < scales.size(); i++) {
+
         //每次缩放一次进行一次检测
         int ws = (int)std::ceil(width*scales[i]);
         int hs = (int)std::ceil(height*scales[i]);
@@ -404,7 +412,7 @@ void MtcnnDetector::drawResult(std::vector<FaceInfo>& faceInfo, cv::Mat& image){
         for(int j = 0; j < 5; j++) {
             cv::circle(image,cv::Point(faceInfo[i].landmark[2 * j],faceInfo[i].landmark[2 * j + 1]), 1, cv::Scalar(255,255,0),2);
         }
-        cv::putText(image, cv::format("%.4f",faceInfo[i].bbox.score), cv::Point(x, y), FONT_HERSHEY_SCRIPT_SIMPLEX, 2, cv::Scalar(0,0,255));
+        cv::putText(image, cv::format("%.4f",faceInfo[i].bbox.score), cv::Point(x, y), FONT_HERSHEY_SCRIPT_SIMPLEX, 1, cv::Scalar(0,0,255));
 
     }
 }

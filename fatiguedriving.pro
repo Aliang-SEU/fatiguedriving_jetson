@@ -14,7 +14,8 @@ INCLUDEPATH +=  /home/nvidia/Documents/MTCNN_Caffe/include \
                 /usr/local/include/opencv \
                 /usr/local/include/opencv2 \
                 /usr/local/cuda/include \
-                /usr/include/boost/
+                /usr/include/boost/ \
+                #/home/nvidia/Desktop/fatiguedriving/dsst
                 #/home/nvidia/fatiguedriving/lib/local/LandmarkDetector/include \
                 #/home/nvidia/fatiguedriving/lib/local/Utilities/include \
 
@@ -90,7 +91,7 @@ SOURCES += \
 #    lib/local/Utilities/src/VisualizationUtils.cpp \
 #    lib/local/Utilities/src/Visualizer.cpp \
     LandMarkWithPose.cpp \
-    MtcnnOpencv.cpp
+    MtcnnOpencv.cpp \
 
 #  main1.cpp
 
@@ -112,4 +113,5 @@ LIBS += -L/usr/local/lib/ \
         -lboost_system \
         -lboost_filesystem \
         -ldlib \
-        -lgomp
+        -lgomp \
+        -lopencv_tracking \

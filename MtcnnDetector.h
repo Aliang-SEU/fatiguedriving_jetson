@@ -71,8 +71,8 @@ private:
     std::vector<FaceInfo> faceInfo;
 
     const float factor = 0.5f;
-    const float threshold[3] = { 0.7f, 0.7f, 0.7f };
-    const int minSize = 40;
+    const float threshold[3] = { 0.9f, 0.9f, 0.9f };
+    const int minSize = 60;
 
     //omp
     const int threads_num = 6;
