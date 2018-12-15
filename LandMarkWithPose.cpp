@@ -2,7 +2,7 @@
  *  git:
  *  repo1: https://github.com/guozhongluo/head-pose-estimation-and-face-landmark
  *  repo2: https://github.com/qiexing/face-landmark-localization
- *  目前的速度大概在32ms 一帧
+ *  目前的速度大概在30ms 一帧
  */
 
 #include "LandMarkWithPose.h"

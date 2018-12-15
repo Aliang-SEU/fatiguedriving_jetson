@@ -292,13 +292,14 @@ cv::Mat CaptureSequence::getNextFrame() {
         latestGrayFrame = std::get<2>(data);
     }else {
         bool success = capture.read(latestFrame);
+        //记录时间
         timeStamp = (cv::getTickCount() - startTime) / cv::getTickFrequency();
 
         if(!success) {
             latestFrame = cv::Mat();
         }
 
-        ConvertToGrayscale_8bit(latestFrame, latestGrayFrame);
+        //ConvertToGrayscale_8bit(latestFrame, latestGrayFrame);
     }
 
     frameNum++;

@@ -115,3 +115,4 @@ LIBS += -L/usr/local/lib/ \
         -ldlib \
         -lgomp \
         -lopencv_tracking \
+        -lopencv_viz
