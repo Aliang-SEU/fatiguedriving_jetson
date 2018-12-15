@@ -120,7 +120,6 @@ int main(int argc, char **argv){
 
         //LandmarkPoints res1 = landmark.detectLandmark(faceRegion);
 
-
         //mouthDetector.calculate(res.innerMouth);
         rectangle(image, bbox, Scalar( 255, 0, 0 ), 2, 1 );
         cv::imshow("image", image);
