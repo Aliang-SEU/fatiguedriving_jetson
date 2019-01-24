@@ -11,6 +11,15 @@
 
 #include "Landmark.h"
 
+
+//        LandmarkPoints res1 = landmark.detectLandmark(faceRegion);
+
+//        for(size_t k = 0; k < res1.faceLandmark.size(); k++) {
+//            cv::Point2f point = cv::Point(int(res1.faceLandmark[k].x) + bbox.x, int(res1.faceLandmark[k].y) + bbox.y);
+//            cv::circle(image, point, 0.1, cv::Scalar(0, 255, 0), 2, 2, 0);
+//            imagePoints.push_back(point);
+//        }
+
 Landmark::Landmark(){
 
     Caffe::set_mode(Caffe::GPU);
@@ -66,6 +75,7 @@ LandmarkPoints Landmark::detectLandmark(cv::Mat& img) {
     int points_num = feat_dim / 2;
     for (int i = 0; i < points_num; i++) {
         cv::Point point = cv::Point(int(*(data_ptr+(2*i))*(img.cols)),int(*(data_ptr+ 2 * i + 1)*(img.rows)));
+        //cv::Point point = cv::Point(*(data_ptr+(2*i)),*(data_ptr+ 2 * i + 1));
         landmarkPoints.faceLandmark.push_back(point);
         if(i <= 16) {
             landmarkPoints.faceEdge.push_back(point);

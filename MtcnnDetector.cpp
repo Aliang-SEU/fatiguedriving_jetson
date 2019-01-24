@@ -2,9 +2,6 @@
 
 #define DEBUG
 
-using namespace cv;
-using namespace std;
-
 MtcnnDetector::MtcnnDetector(const string& proto_model_dir) {
 
     Caffe::set_mode(Caffe::GPU);
@@ -32,7 +29,7 @@ float MtcnnDetector::IoU(float xmin, float ymin, float xmax, float ymax,
         return 0;
     float s = iw*ih;
     if (is_iom) {
-        float ov = s / min((xmax - xmin + 1)*(ymax - ymin + 1), (xmax_ - xmin_ + 1)*(ymax_ - ymin_ + 1));
+        float ov = s / std::min((xmax - xmin + 1)*(ymax - ymin + 1), (xmax_ - xmin_ + 1)*(ymax_ - ymin_ + 1));
         return ov;
     }
     else {
@@ -123,19 +120,19 @@ void MtcnnDetector::BBoxRegression(vector<FaceInfo>& bboxes) {
 }
 
 //边界框回归填充函数
-void MtcnnDetector::BBoxPad(vector<FaceInfo>& bboxes, int width, int height) {
+void MtcnnDetector::BBoxPad(std::vector<FaceInfo>& bboxes, int width, int height) {
 
 #pragma omp parallel for num_threads(threads_num)
     for (size_t i = 0; i < bboxes.size(); ++i) {
         FaceBox &bbox = bboxes[i].bbox;
-        bbox.xmin = round(max(bbox.xmin, 0.f));
-        bbox.ymin = round(max(bbox.ymin, 0.f));
-        bbox.xmax = round(min(bbox.xmax, width - 1.f));
-        bbox.ymax = round(min(bbox.ymax, height - 1.f));
+        bbox.xmin = round(std::max(bbox.xmin, 0.f));
+        bbox.ymin = round(std::max(bbox.ymin, 0.f));
+        bbox.xmax = round(std::min(bbox.xmax, width - 1.f));
+        bbox.ymax = round(std::min(bbox.ymax, height - 1.f));
     }
 }
 
-void MtcnnDetector::BBoxPadSquare(vector<FaceInfo>& bboxes, int width, int height) {
+void MtcnnDetector::BBoxPadSquare(std::vector<FaceInfo>& bboxes, int width, int height) {
 
 #pragma omp parallel for num_threads(threads_num)
     for (size_t i = 0; i < bboxes.size(); ++i) {
@@ -143,11 +140,11 @@ void MtcnnDetector::BBoxPadSquare(vector<FaceInfo>& bboxes, int width, int heigh
         float w = bbox.xmax - bbox.xmin + 1;
         float h = bbox.ymax - bbox.ymin + 1;
         float side = h>w ? h : w;
-        bbox.xmin = round(max(bbox.xmin + (w - side)*0.5f, 0.f));
+        bbox.xmin = round(std::max(bbox.xmin + (w - side)*0.5f, 0.f));
 
-        bbox.ymin = round(max(bbox.ymin + (h - side)*0.5f, 0.f));
-        bbox.xmax = round(min(bbox.xmin + side - 1, width - 1.f));
-        bbox.ymax = round(min(bbox.ymin + side - 1, height - 1.f));
+        bbox.ymin = round(std::max(bbox.ymin + (h - side)*0.5f, 0.f));
+        bbox.xmax = round(std::min(bbox.xmin + side - 1, width - 1.f));
+        bbox.ymax = round(std::min(bbox.ymin + side - 1, height - 1.f));
     }
 }
 
@@ -234,7 +231,7 @@ vector<FaceInfo> MtcnnDetector::ProposalNet(const cv::Mat& img, int minSize, flo
     int num_box = (int)total_boxes_.size();
     vector<FaceInfo> res_boxes;
     if (num_box != 0) {
-        res_boxes = NMS(total_boxes_, 0.7f, 'u');
+        res_boxes = NMS(total_boxes_, 0.5f, 'u');
         BBoxRegression(res_boxes);
         BBoxPadSquare(res_boxes, width, height);
     }
@@ -271,10 +268,10 @@ vector<FaceInfo> MtcnnDetector::NextStage(const cv::Mat& image, vector<FaceInfo>
 #pragma omp parallel for num_threads(threads_num)
     for (int n = 0; n < batch_size; ++n) {
         FaceBox &box = pre_stage_res[n].bbox;
-        Mat roi = image(Rect(Point((int)box.xmin, (int)box.ymin), Point((int)box.xmax, (int)box.ymax))).clone();
-        resize(roi, roi, Size(input_w, input_h));
+        cv::Mat roi = image(cv::Rect(cv::Point((int)box.xmin, (int)box.ymin), cv::Point((int)box.xmax, (int)box.ymax))).clone();
+        resize(roi, roi, cv::Size(input_w, input_h));
         float *input_data_n = input_data + input_layer->offset(n);
-        Vec3b *roi_data = (Vec3b *)roi.data;
+        cv::Vec3b *roi_data = (cv::Vec3b *)roi.data;
         CHECK_EQ(roi.isContinuous(), true);
         for (int k = 0; k < spatial_size; ++k) {
             input_data_n[k] = float((roi_data[k][0] - mean_val)*std_val);
@@ -347,12 +344,12 @@ vector<FaceInfo> MtcnnDetector::Detect(const cv::Mat& image, const int stage) {
         int size = (int)ceil(1.f*num / step_size);
         for (int iter = 0; iter < size; ++iter){
             int start = iter*step_size;
-            int end = min(start + step_size, num);
+            int end = std::min(start + step_size, num);
             vector<FaceInfo> input(pnet_res.begin() + start, pnet_res.begin() + end);
             vector<FaceInfo> res = NextStage(image, input, 24, 24, 2, threshold[1]);
             rnet_res.insert(rnet_res.end(), res.begin(), res.end());
         }
-        rnet_res = NMS(rnet_res, 0.7f, 'u');
+        rnet_res = NMS(rnet_res, 0.5f, 'u');
         BBoxRegression(rnet_res);
         BBoxPadSquare(rnet_res, image.cols, image.rows);
 
@@ -362,13 +359,13 @@ vector<FaceInfo> MtcnnDetector::Detect(const cv::Mat& image, const int stage) {
         int size = (int)ceil(1.f*num / step_size);
         for (int iter = 0; iter < size; ++iter){
             int start = iter*step_size;
-            int end = min(start + step_size, num);
+            int end = std::min(start + step_size, num);
             vector<FaceInfo> input(rnet_res.begin() + start, rnet_res.begin() + end);
             vector<FaceInfo> res = NextStage(image, input, 48, 48, 3, threshold[2]);
             onet_res.insert(onet_res.end(), res.begin(), res.end());
         }
         BBoxRegression(onet_res);
-        onet_res = NMS(onet_res, 0.7f, 'm');
+        onet_res = NMS(onet_res, 0.5f, 'm');
         BBoxPad(onet_res, image.cols, image.rows);
 
     }
@@ -412,7 +409,7 @@ void MtcnnDetector::drawResult(std::vector<FaceInfo>& faceInfo, cv::Mat& image){
         for(int j = 0; j < 5; j++) {
             cv::circle(image,cv::Point(faceInfo[i].landmark[2 * j],faceInfo[i].landmark[2 * j + 1]), 1, cv::Scalar(255,255,0),2);
         }
-        cv::putText(image, cv::format("%.4f",faceInfo[i].bbox.score), cv::Point(x, y), FONT_HERSHEY_SCRIPT_SIMPLEX, 1, cv::Scalar(0,0,255));
+        cv::putText(image, cv::format("%.4f",faceInfo[i].bbox.score), cv::Point(x, y), cv::FONT_HERSHEY_SCRIPT_SIMPLEX, 1, cv::Scalar(0,0,255));
 
     }
 }

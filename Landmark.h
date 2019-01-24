@@ -23,15 +23,15 @@ using namespace caffe;
 // 右脸最外 16
 
 typedef struct LandmarkPoints {
-    std::vector<cv::Point> faceLandmark; //0-67
-    std::vector<cv::Point> faceEdge;    //0-16
-    std::vector<cv::Point> leftEyebrow; //17-21
-    std::vector<cv::Point> rightEyebrow; //22-26
-    std::vector<cv::Point> nose;        //27-35
-    std::vector<cv::Point> leftEye;     //36-41 顺时针
-    std::vector<cv::Point> rightEye;    //42-47 顺时针
-    std::vector<cv::Point> outerMouth;  //48-59 顺时针
-    std::vector<cv::Point> innerMouth;  //60-67 顺时针
+    std::vector<cv::Point2f> faceLandmark; //0-67
+    std::vector<cv::Point2f> faceEdge;    //0-16
+    std::vector<cv::Point2f> leftEyebrow; //17-21
+    std::vector<cv::Point2f> rightEyebrow; //22-26
+    std::vector<cv::Point2f> nose;        //27-35
+    std::vector<cv::Point2f> leftEye;     //36-41 顺时针
+    std::vector<cv::Point2f> rightEye;    //42-47 顺时针
+    std::vector<cv::Point2f> outerMouth;  //48-59 顺时针
+    std::vector<cv::Point2f> innerMouth;  //60-67 顺时针
 } LandmarkPoints;
 
 class Landmark{
@@ -39,8 +39,8 @@ public:
     Landmark();
     LandmarkPoints detectLandmark(cv::Mat& img);
 private:
-    std::string network = "../model/landmark/landmark.prototxt";
-    std::string weights = "../model/landmark/landmark.caffemodel";
+    const std::string network = "../model/landmark/landmark.prototxt";
+    const std::string weights = "../model/landmark/landmark.caffemodel";
 
     std::shared_ptr<Net<float>> net;
     cv::Size  input_size;

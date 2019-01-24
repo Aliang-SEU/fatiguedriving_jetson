@@ -9,9 +9,6 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/dnn.hpp>
 
-using namespace std;
-using namespace cv;
-
 const int threads_num = 4;
 const float pnet_stride = 2;
 const float pnet_cell_size = 12;
@@ -40,23 +37,23 @@ typedef struct FaceInfo {
 class MtcnnOpencv{
 
 public:
-    MtcnnOpencv(const string& proto_model_dir);
-    vector<FaceInfo> Detect(const cv::Mat& img, const int stage = 3);
+    MtcnnOpencv(const std::string& proto_model_dir);
+    std::vector<FaceInfo> Detect(const cv::Mat& img, const int stage = 3);
     void drawResult(std::vector<FaceInfo>& faceInfo, cv::Mat& image);
 //protected:
-    vector<FaceInfo> ProposalNet(const cv::Mat& img, int min_size, float threshold, float factor);
-    vector<FaceInfo> NextStage(const cv::Mat& image, vector<FaceInfo> &pre_stage_res, int input_w, int input_h, int stage_num, const float threshold);
-    void BBoxRegression(vector<FaceInfo>& bboxes);
-    void BBoxPadSquare(vector<FaceInfo>& bboxes, int width, int height);
-    void BBoxPad(vector<FaceInfo>& bboxes, int width, int height);
-    void GenerateBBox(Mat* confidence, Mat* reg_box, float scale, float thresh);
+    std::vector<FaceInfo> ProposalNet(const cv::Mat& img, int min_size, float threshold, float factor);
+    std::vector<FaceInfo> NextStage(const cv::Mat& image, std::vector<FaceInfo> &pre_stage_res, int input_w, int input_h, int stage_num, const float threshold);
+    void BBoxRegression(std::vector<FaceInfo>& bboxes);
+    void BBoxPadSquare(std::vector<FaceInfo>& bboxes, int width, int height);
+    void BBoxPad(std::vector<FaceInfo>& bboxes, int width, int height);
+    void GenerateBBox(cv::Mat* confidence, cv::Mat* reg_box, float scale, float thresh);
     std::vector<FaceInfo> NMS(std::vector<FaceInfo>& bboxes, float thresh, char methodType);
     float IoU(float xmin, float ymin, float xmax, float ymax, float xmin_, float ymin_, float xmax_, float ymax_, bool is_iom = false);
 
 public:
-    dnn::Net PNet_;
-    dnn::Net RNet_;
-    dnn::Net ONet_;
+    cv::dnn::Net PNet_;
+    cv::dnn::Net RNet_;
+    cv::dnn::Net ONet_;
 
     std::vector<FaceInfo> candidate_boxes_;
     std::vector<FaceInfo> total_boxes_;

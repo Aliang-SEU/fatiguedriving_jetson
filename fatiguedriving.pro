@@ -4,7 +4,7 @@ QT -= gui
 TARGET = fatiguedriving
 CONFIG += console
 CONFIG -= app_bundle
-QMAKE_CXX = ccache g++
+QMAKE_CXX = g++
 QMAKE_CXXFLAGS += -std=c++11 -fopenmp -o3
 TEMPLATE = app
 
@@ -57,7 +57,10 @@ HEADERS += MtcnnDetector.h \
 #    lib/local/Utilities/include/VisualizationUtils.h \
 #    lib/local/Utilities/include/Visualizer.h \
     LandMarkWithPose.h \
-    MtcnnOpencv.h
+    MtcnnOpencv.h \
+    PoseEstimator.h \
+    KalmanStabilizer.h \
+    Processor.h
 
 
 SOURCES += \
@@ -92,6 +95,11 @@ SOURCES += \
 #    lib/local/Utilities/src/Visualizer.cpp \
     LandMarkWithPose.cpp \
     MtcnnOpencv.cpp \
+    PoseEstimator.cpp \
+    KalmanStabilizer.cpp \
+    Processor.cpp \
+    VideoCapturesource.cpp
+#    DrivingSystem.cpp
 
 #  main1.cpp
 
@@ -105,6 +113,7 @@ LIBS += -L/usr/local/lib/ \
         -lopencv_videoio \
         -lopencv_objdetect \
         -lopencv_calib3d \
+        -lopencv_video \
         -L/home/nvidia/Documents/MTCNN_Caffe/build/lib \
         -lopenblas \
         -lcaffe \

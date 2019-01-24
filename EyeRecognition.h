@@ -1,3 +1,5 @@
+#ifndef EYERECOGNITION_H
+#define EYERECOGNITION_H
 #include <opencv2/opencv.hpp>
 #include <caffe/caffe.hpp>
 
@@ -18,8 +20,8 @@ private:
 	cv::Size input_size;
 	cv::Mat mean_;
 	int num_channels_;
-
-    const std::string modelPath="./model/eye/detect_eye.prototxt";
-    const std::string paramPath="./model/eye/detect_eye.caffemodel";
+    Blob<float>* input_layer;
+    const std::string modelPath = "../model/eye/detect_eye.prototxt";
+    const std::string paramPath = "../model/eye/detect_eye.caffemodel";
 };
-
+#endif

@@ -111,8 +111,6 @@ LandmarkAndPose LandmarkWithPose::getPredict(cv::Mat& img){
 
     LandmarkAndPose landmarkAndPose;
 
-    Blob<float>* input_layer = net->input_blobs()[0];
-
     std::vector<cv::Mat> input_channels;
     wrapInputLayer(&input_channels);
 

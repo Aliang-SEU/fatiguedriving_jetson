@@ -1,9 +1,6 @@
-/*
- * 模型的准确度不是很高 但是速度非常快
- */
 #include "MtcnnOpencv.h"
 
-MtcnnOpencv::MtcnnOpencv(const string& proto_model_dir) {
+MtcnnOpencv::MtcnnOpencv(const std::string& proto_model_dir) {
 //    PNet_ = cv::dnn::readNetFromCaffe(proto_model_dir + "/mtcnnOpencv/det1.prototxt", proto_model_dir + "/mtcnnOpencv/det1_half.caffemodel");
     PNet_ = cv::dnn::readNetFromCaffe(proto_model_dir + "/mtcnnOpencv/det1_.prototxt", proto_model_dir + "/mtcnnOpencv/det1_.caffemodel");
 
@@ -23,7 +20,7 @@ float MtcnnOpencv::IoU(float xmin, float ymin, float xmax, float ymax,
         return 0;
     float s = iw*ih;
     if (is_iom) {
-        float ov = s / min((xmax - xmin + 1)*(ymax - ymin + 1), (xmax_ - xmin_ + 1)*(ymax_ - ymin_ + 1));
+        float ov = s / std::min((xmax - xmin + 1)*(ymax - ymin + 1), (xmax_ - xmin_ + 1)*(ymax_ - ymin_ + 1));
         return ov;
     }
     else {
@@ -31,7 +28,7 @@ float MtcnnOpencv::IoU(float xmin, float ymin, float xmax, float ymax,
         return ov;
     }
 }
-void MtcnnOpencv::BBoxRegression(vector<FaceInfo>& bboxes) {
+void MtcnnOpencv::BBoxRegression(std::vector<FaceInfo>& bboxes) {
 
 //#pragma omp parallel for num_threads(threads_num)
     for (int i = 0; i < bboxes.size(); ++i) {
@@ -45,32 +42,32 @@ void MtcnnOpencv::BBoxRegression(vector<FaceInfo>& bboxes) {
         bbox.ymax += bbox_reg[3] * h;
     }
 }
-void MtcnnOpencv::BBoxPad(vector<FaceInfo>& bboxes, int width, int height) {
+void MtcnnOpencv::BBoxPad(std::vector<FaceInfo>& bboxes, int width, int height) {
 
 //#pragma omp parallel for num_threads(threads_num)
     for (int i = 0; i < bboxes.size(); ++i) {
         FaceBox &bbox = bboxes[i].bbox;
-        bbox.xmin = round(max(bbox.xmin, 0.f));
-        bbox.ymin = round(max(bbox.ymin, 0.f));
-        bbox.xmax = round(min(bbox.xmax, width - 1.f));
-        bbox.ymax = round(min(bbox.ymax, height - 1.f));
+        bbox.xmin = round(std::max(bbox.xmin, 0.f));
+        bbox.ymin = round(std::max(bbox.ymin, 0.f));
+        bbox.xmax = round(std::min(bbox.xmax, width - 1.f));
+        bbox.ymax = round(std::min(bbox.ymax, height - 1.f));
     }
 }
-void MtcnnOpencv::BBoxPadSquare(vector<FaceInfo>& bboxes, int width, int height) {
+void MtcnnOpencv::BBoxPadSquare(std::vector<FaceInfo>& bboxes, int width, int height) {
 //#pragma omp parallel for num_threads(threads_num)
     for (int i = 0; i < bboxes.size(); ++i) {
         FaceBox &bbox = bboxes[i].bbox;
         float w = bbox.xmax - bbox.xmin + 1;
         float h = bbox.ymax - bbox.ymin + 1;
         float side = h>w ? h : w;
-        bbox.xmin = round(max(bbox.xmin + (w - side)*0.5f, 0.f));
+        bbox.xmin = round(std::max(bbox.xmin + (w - side)*0.5f, 0.f));
 
-        bbox.ymin = round(max(bbox.ymin + (h - side)*0.5f, 0.f));
-        bbox.xmax = round(min(bbox.xmin + side - 1, width - 1.f));
-        bbox.ymax = round(min(bbox.ymin + side - 1, height - 1.f));
+        bbox.ymin = round(std::max(bbox.ymin + (h - side)*0.5f, 0.f));
+        bbox.xmax = round(std::min(bbox.xmin + side - 1, width - 1.f));
+        bbox.ymax = round(std::min(bbox.ymin + side - 1, height - 1.f));
     }
 }
-void MtcnnOpencv::GenerateBBox(Mat* confidence, Mat* reg_box,
+void MtcnnOpencv::GenerateBBox(cv::Mat* confidence, cv::Mat* reg_box,
                          float scale, float thresh) {
     int feature_map_w_ = confidence->size[3];
     int feature_map_h_ = confidence->size[2];
@@ -174,17 +171,17 @@ std::vector<FaceInfo> MtcnnOpencv::NMS(std::vector<FaceInfo>& bboxes,
     return bboxes_nms;
 }
 
-vector<FaceInfo> MtcnnOpencv::NextStage(const cv::Mat& image, vector<FaceInfo> &pre_stage_res, int input_w, int input_h, int stage_num, const float threshold) {
-    vector<FaceInfo> res;
+std::vector<FaceInfo> MtcnnOpencv::NextStage(const cv::Mat& image, std::vector<FaceInfo> &pre_stage_res, int input_w, int input_h, int stage_num, const float threshold) {
+    std::vector<FaceInfo> res;
     int batch_size = (int)pre_stage_res.size();
     if (batch_size == 0)
         return res;
-    Mat* input_layer = nullptr;
-    Mat* confidence = nullptr;
-    Mat* reg_box = nullptr;
-    Mat* reg_landmark = nullptr;
+    cv::Mat* input_layer = nullptr;
+    cv::Mat* confidence = nullptr;
+    cv::Mat* reg_box = nullptr;
+    cv::Mat* reg_landmark = nullptr;
 
-    std::vector< Mat > targets_blobs;
+    std::vector< cv::Mat > targets_blobs;
 
     switch (stage_num) {
         case 2: {
@@ -209,18 +206,18 @@ vector<FaceInfo> MtcnnOpencv::NextStage(const cv::Mat& image, vector<FaceInfo> &
 //#pragma omp parallel for num_threads(threads_num)
     for (int n = 0; n < batch_size; ++n) {
         FaceBox &box = pre_stage_res[n].bbox;
-        Mat roi = image(Rect(Point((int)box.xmin, (int)box.ymin), Point((int)box.xmax, (int)box.ymax))).clone();
-        resize(roi, roi, Size(input_w, input_h));
+        cv::Mat roi = image(cv::Rect(cv::Point((int)box.xmin, (int)box.ymin), cv::Point((int)box.xmax, (int)box.ymax))).clone();
+        resize(roi, roi, cv::Size(input_w, input_h));
         inputs.push_back(roi);
         //resize好的face roi 里面
     }
 
-    Mat blob_input = dnn::blobFromImages(inputs, std_val,cv::Size(),cv::Scalar(mean_val,mean_val,mean_val),false);
+    cv::Mat blob_input = cv::dnn::blobFromImages(inputs, std_val,cv::Size(),cv::Scalar(mean_val,mean_val,mean_val),false);
 
     switch (stage_num) {
         case 2: {
             RNet_.setInput(blob_input, "data");
-            const std::vector< String >  targets_node{"conv5-2","prob1"};
+            const std::vector< cv::String >  targets_node{"conv5-2","prob1"};
             RNet_.forward(targets_blobs,targets_node);
             confidence = &targets_blobs[1];
             reg_box = &targets_blobs[0];
@@ -230,7 +227,7 @@ vector<FaceInfo> MtcnnOpencv::NextStage(const cv::Mat& image, vector<FaceInfo> &
         case 3: {
 
             ONet_.setInput(blob_input, "data");
-            const std::vector< String >  targets_node{"conv6-2","conv6-3","prob1"};
+            const std::vector< cv::String >  targets_node{"conv6-2","conv6-3","prob1"};
             ONet_.forward(targets_blobs,targets_node);
             reg_box = &targets_blobs[0];
             reg_landmark = &targets_blobs[1];
@@ -272,7 +269,7 @@ vector<FaceInfo> MtcnnOpencv::NextStage(const cv::Mat& image, vector<FaceInfo> &
     return res;
 }
 
-vector<FaceInfo> MtcnnOpencv::ProposalNet(const cv::Mat& img, int minSize, float threshold, float factor) {
+std::vector<FaceInfo> MtcnnOpencv::ProposalNet(const cv::Mat& img, int minSize, float threshold, float factor) {
     cv::Mat  resized;
     int width = img.cols;
     int height = img.rows;
@@ -312,7 +309,7 @@ vector<FaceInfo> MtcnnOpencv::ProposalNet(const cv::Mat& img, int minSize, float
     int num_box = (int)total_boxes_.size();
 //    std::cout<<num_box<<std::endl;
 
-    vector<FaceInfo> res_boxes;
+    std::vector<FaceInfo> res_boxes;
     if (num_box != 0) {
         res_boxes = NMS(total_boxes_, 0.7f, 'u');
         BBoxRegression(res_boxes);
@@ -321,11 +318,11 @@ vector<FaceInfo> MtcnnOpencv::ProposalNet(const cv::Mat& img, int minSize, float
     return res_boxes;
 }
 
-vector<FaceInfo> MtcnnOpencv::Detect(const cv::Mat& image, const int stage) {
+std::vector<FaceInfo> MtcnnOpencv::Detect(const cv::Mat& image, const int stage) {
 
-    vector<FaceInfo> pnet_res;
-    vector<FaceInfo> rnet_res;
-    vector<FaceInfo> onet_res;
+    std::vector<FaceInfo> pnet_res;
+    std::vector<FaceInfo> rnet_res;
+    std::vector<FaceInfo> onet_res;
 
     const float* threshold = this->threshold;
     const float factor = this->factor;
@@ -342,9 +339,9 @@ vector<FaceInfo> MtcnnOpencv::Detect(const cv::Mat& image, const int stage) {
         int size = (int)ceil(1.f*num / step_size);
         for (int iter = 0; iter < size; ++iter){
             int start = iter*step_size;
-            int end = min(start + step_size, num);
-            vector<FaceInfo> input(pnet_res.begin() + start, pnet_res.begin() + end);
-            vector<FaceInfo> res = NextStage(image, input, 24, 24, 2, threshold[1]);
+            int end = std::min(start + step_size, num);
+            std::vector<FaceInfo> input(pnet_res.begin() + start, pnet_res.begin() + end);
+            std::vector<FaceInfo> res = NextStage(image, input, 24, 24, 2, threshold[1]);
             rnet_res.insert(rnet_res.end(), res.begin(), res.end());
         }
         rnet_res = NMS(rnet_res, 0.4f, 'm');
@@ -357,9 +354,9 @@ vector<FaceInfo> MtcnnOpencv::Detect(const cv::Mat& image, const int stage) {
         int size = (int)ceil(1.f*num / step_size);
         for (int iter = 0; iter < size; ++iter){
             int start = iter*step_size;
-            int end = min(start + step_size, num);
-            vector<FaceInfo> input(rnet_res.begin() + start, rnet_res.begin() + end);
-            vector<FaceInfo> res = NextStage(image, input, 48, 48, 3, threshold[2]);
+            int end = std::min(start + step_size, num);
+            std::vector<FaceInfo> input(rnet_res.begin() + start, rnet_res.begin() + end);
+            std::vector<FaceInfo> res = NextStage(image, input, 48, 48, 3, threshold[2]);
             onet_res.insert(onet_res.end(), res.begin(), res.end());
         }
         BBoxRegression(onet_res);
@@ -393,7 +390,7 @@ void MtcnnOpencv::drawResult(std::vector<FaceInfo>& faceInfo, cv::Mat& image){
         for(int j = 0; j < 5; j++) {
             cv::circle(image,cv::Point(faceInfo[i].landmark[2 * j],faceInfo[i].landmark[2 * j + 1]), 1, cv::Scalar(255,255,0),2);
         }
-        cv::putText(image, cv::format("%.4f",faceInfo[i].bbox.score), cv::Point(x, y), FONT_HERSHEY_SCRIPT_SIMPLEX, 1, cv::Scalar(0,0,255));
+        cv::putText(image, cv::format("%.4f",faceInfo[i].bbox.score), cv::Point(x, y), cv::FONT_HERSHEY_SCRIPT_SIMPLEX, 1, cv::Scalar(0,0,255));
 
     }
 }

@@ -1,7 +1,6 @@
 #ifndef MOUTHRECOGNITION_H
 #define MOUTHRECOGNITION_H
 #include <opencv2/core.hpp>
-using namespace cv;
 
 /**
  * 双阈值法哈欠检测
